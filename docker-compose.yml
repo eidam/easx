@@ -1,0 +1,23 @@
+version: "3.2"
+services:
+ redis:
+    image: "redis:alpine"
+    ports:
+     - "6379:6379"
+
+ consul:
+  image: "consul"
+  command: "consul agent -dev -client=0.0.0.0"
+  ports:
+   - "8500:8500"
+
+ easx:
+   image: "adamjanis/easx"
+   ports:
+     - 80:80
+     - 443:443
+   environment:
+    - EASX_DEBUG=true
+    - EASX_REDIS_HOST=172.17.0.1
+    - EASX_CONSUL_HOST=172.17.0.1
+    - EASX_DNS_RESOLVER=1.1.1.1

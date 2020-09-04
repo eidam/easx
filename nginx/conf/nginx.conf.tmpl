@@ -1,0 +1,66 @@
+user root; # TODO change me
+worker_processes 1;
+pid /run/nginx.pid;
+
+env EASX_DISABLE_LETS_ENCRYPT;
+env EASX_LETS_ENCRYPT_STAGING;
+env EASX_LETS_ENCRYPT_HOOK_SERVER_PORT;
+env EASX_REDIS_PREFIX;
+env EASX_REDIS_HOST;
+env EASX_REDIS_PASSWORD;
+env EASX_REDIS_PORT;
+env EASX_REDIS_TIMEOUT;
+env EASX_REDIS_SSL;
+env EASX_REDIS_SSL_VERIFY;
+env EASX_CONSUL_SERVICE_PREFIX;
+env EASX_CONSUL_HOST;
+env EASX_CONSUL_PORT;
+env EASX_CONSUL_TOKEN;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    # Basic Settings
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 30s 30s;
+    client_max_body_size  {{ default .Env.EASX_MAX_REQUEST_BODY_SIZE "100m" }};
+
+    # Use the Docker internal DNS, pick your favorite if running outside of Docker
+    resolver {{ default .Env.EASX_DNS_RESOLVER "172.17.0.1" }} ipv6=off;
+
+    # Logging
+    access_log /dev/stdout;
+    error_log /dev/stderr {{ default .Env.EASX_LOG_LEVEL "info" }};
+
+    # Lua settings
+    lua_package_path "${prefix}lualib/?.lua;;";
+
+    lua_shared_dict easx 2m;
+    lua_shared_dict auto_ssl 2m;
+    lua_shared_dict auto_ssl_settings 64k;
+    {{ if eq (lower (default .Env.EASX_DEBUG "")) "true" }}
+    lua_code_cache off;
+    {{ else }}
+    lua_code_cache on;
+    {{ end }}
+
+    {{ if ne (lower (default .Env.EASX_DISABLE_LETS_ENCRYPT "")) "true" }}
+    # Enable automatic Let's Encryps certificate generation, if
+    # `EASX_DISABLE_LETS_ENCRYPT` is *not* set to `true`.
+    # Check out https://github.com/openresty/lua-resty-core
+    init_by_lua_file "lualib/letsencrypt.lua";
+
+    init_worker_by_lua_block {
+        auto_ssl:init_worker()
+    }
+    {{ end }}
+
+    # Includes
+    include mime.types;
+    include easx.conf;
+    include ../sites-enabled/*;
+}

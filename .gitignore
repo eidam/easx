@@ -1,0 +1,13 @@
+.env
+.venv
+*.pyc
+docker-compose.yaml
+.stolos
+.vscode
+
+# Ignore Vim files
+*.swp
+*.swo
+
+.mypy_cache
+.pytest_cache
