@@ -90,3 +90,6 @@ with Nomad you might wanna use dynamic ports
 - Only proxy mode is working right now, with redirect commented out (we dont need it right now)
 - Consul service needs to have both `target` and `target_host` tags set
 - Tests coverage (no tests)
+
+# Build 
+-  docker build -t adamjanis/easx:dev ../ && docker push adamjanis/easx:dev && tf apply

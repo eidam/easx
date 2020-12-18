@@ -11,9 +11,10 @@ map $http_x_forwarded_proto $proxy_set_x_forwarded_proto {
 
 server {
     listen *:{{ default .Env.EASX_HTTP_PORT "80" }};
-    listen *:{{ default .Env.EASX_HTTPS_PORT "443" }} ssl;
+    listen *:{{ default .Env.EASX_HTTPS_PORT "443" }} http2 ssl;
     default_type text/html;
 
+    ssl_ciphers EECDH+CHACHA20:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;
     ssl_certificate {{ default .Env.EASX_SSL_DEFAULT_CERTIFICATE "/etc/easx/ssl/default.crt" }};
     ssl_certificate_key {{ default .Env.EASX_SSL_DEFAULT_KEY "/etc/easx/ssl/default.key" }};
 
